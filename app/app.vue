@@ -10,6 +10,7 @@ await store.fetchFlights()
     <AppHeader />
     <div class="page__hero" aria-hidden="true" />
     <main class="page__content">
+      <FlightFilters />
       <FlightCard
         v-if="store.flights.length"
         :flight="store.flights[0]"
@@ -22,6 +23,7 @@ await store.fetchFlights()
 .page {
   min-height: 100vh;
   background: var(--color-neutral-100);
+  overflow-x: hidden;
 }
 
 .page__hero {
@@ -35,6 +37,8 @@ await store.fetchFlights()
   margin: 0 auto;
   padding: var(--space-md);
   transform: translateY(-40px);
+  box-sizing: border-box;
+  width: 100%;
 }
 
 @media (min-width: 640px) {
