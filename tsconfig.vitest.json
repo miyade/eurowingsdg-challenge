@@ -1,0 +1,13 @@
+{
+  "extends": "./.nuxt/tsconfig.app.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "#shared/*": ["./shared/*"],
+      "~/*": ["./app/*"]
+    }
+  },
+  "include": [
+    "app/tests/**/*.spec.ts"
+  ]
+}
