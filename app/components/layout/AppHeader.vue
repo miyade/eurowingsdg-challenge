@@ -2,38 +2,56 @@
 </script>
 
 <template>
-  <header role="banner">
-   <img
-    src="/eurowings-logo.svg"
-    alt="Eurowings"
-    width="160"
-    height="41"
-   />
-    <nav>
-      <span>Flight Offers</span>
+  <header class="header" role="banner">
+    <div class="header__logo">
+      <img
+        src="/eurowings-logo.svg"
+        alt="Eurowings"
+        width="160"
+        height="41"
+      />
+    </div>
+    <nav class="header__nav">
+      <span class="header__title">Flight Offers</span>
     </nav>
   </header>
 </template>
 
 <style scoped>
-header {
-  background: var(--color-white);
-  border-bottom: 1px solid var(--color-neutral-200);
-  padding: var(--space-md) var(--space-lg);
+.header {
+  background: linear-gradient(135deg, #E4003A 0%, #B8002E 100%);
+  padding: var(--space-sm) var(--space-md);
   display: flex;
   align-items: center;
-  gap: var(--space-md);
+  justify-content: space-between;
 }
 
-img {
+.header__logo img {
+  display: block;
   height: 32px;
   width: auto;
-  display: block;
+  filter: brightness(0) invert(1);
 }
 
-nav span {
-  font-size: var(--text-lg);
-  font-weight: var(--font-semibold);
-  color: var(--color-neutral-600);
+.header__title {
+  display: none;
+}
+
+@media (min-width: 640px) {
+  .header {
+    padding: var(--space-md) var(--space-xl);
+  }
+
+  .header__logo img {
+    height: 41px;
+  }
+
+  .header__title {
+    display: block;
+    color: var(--color-white);
+    font-size: var(--text-lg);
+    font-weight: var(--font-semibold);
+    letter-spacing: 0.01em;
+  }
 }
 </style>

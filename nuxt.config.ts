@@ -19,4 +19,9 @@ export default defineNuxtConfig({
   typescript: {
     strict: true,
   },
+  components: {
+    dirs: [
+      { path: '~/components', pathPrefix: false }
+    ]
+  },
 })
