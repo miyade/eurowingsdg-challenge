@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch } from 'vue'
+import { ref, watch } from 'vue'
 import { useFlightsStore } from '~/stores/flights'
+import { useAirportSearch } from '~/composables/flights/useAirportSearch'
 
 const store = useFlightsStore()
 
@@ -12,17 +13,8 @@ const returnDate = ref('')
 const showOriginSuggestions = ref(false)
 const showDestinationSuggestions = ref(false)
 
-const originSuggestions = computed(() =>
-  store.availableOrigins.filter(o =>
-    o.toLowerCase().startsWith(origin.value.toLowerCase()) && origin.value.length > 0
-  )
-)
-
-const destinationSuggestions = computed(() =>
-  store.availableDestinations.filter(d =>
-    d.toLowerCase().startsWith(destination.value.toLowerCase()) && destination.value.length > 0
-  )
-)
+const originSuggestions = useAirportSearch(origin)
+const destinationSuggestions = useAirportSearch(destination)
 
 watch([origin, destination, departureDate, returnDate], () => {
   store.setFilters({
@@ -90,12 +82,12 @@ function clearFilters() {
           >
             <li
               v-for="s in originSuggestions"
-              :key="s"
+              :key="s.iata"
               role="option"
               class="filters__suggestion"
-              @mousedown="selectOrigin(s)"
+              @mousedown="selectOrigin(s.iata)"
             >
-              {{ s }}
+              {{ s.label }}
             </li>
           </ul>
         </div>
@@ -128,12 +120,12 @@ function clearFilters() {
           >
             <li
               v-for="s in destinationSuggestions"
-              :key="s"
+              :key="s.iata"
               role="option"
               class="filters__suggestion"
-              @mousedown="selectDestination(s)"
+              @mousedown="selectDestination(s.iata)"
             >
-              {{ s }}
+              {{ s.label }}
             </li>
           </ul>
         </div>

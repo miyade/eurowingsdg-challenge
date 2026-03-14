@@ -40,7 +40,7 @@ describe('FlightFilters', () => {
 
   it('autocomplete suggestions appear when typing a matching origin', async () => {
     const input = wrapper.find('#filter-origin')
-    await input.setValue('D')
+    await input.setValue('DU')
     await input.trigger('focus')
     const suggestions = wrapper.find('#origin-suggestions')
     expect(suggestions.exists()).toBe(true)
@@ -49,10 +49,13 @@ describe('FlightFilters', () => {
 
   it('selecting a suggestion sets the input value and hides suggestions', async () => {
     const input = wrapper.find('#filter-origin')
-    await input.setValue('D')
+    await input.setValue('DU')
     await input.trigger('focus')
-    const suggestion = wrapper.find('#origin-suggestions li')
-    await suggestion.trigger('mousedown')
+    const suggestions = wrapper.find('#origin-suggestions')
+    expect(suggestions.exists()).toBe(true)
+    const suggestion = suggestions.findAll('li').find(li => li.text().includes('DUS'))
+    expect(suggestion).toBeDefined()
+    await suggestion!.trigger('mousedown')
     expect((wrapper.find('#filter-origin').element as HTMLInputElement).value).toBe('DUS')
     expect(wrapper.find('#origin-suggestions').exists()).toBe(false)
   })
