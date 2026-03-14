@@ -7,7 +7,22 @@ const store = useFlightsStore()
 <template>
   <section aria-label="Flight results" aria-live="polite" aria-atomic="false">
 
-    <div v-if="store.isLoading" class="flight-list__skeletons" aria-hidden="true">
+    <div v-if="!store.hasMinimumFilters" class="flight-list__presearch" role="status">
+      <svg
+        aria-hidden="true"
+        width="48"
+        height="48"
+        viewBox="0 0 24 24"
+        fill="var(--color-neutral-400)"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path d="M2.5 19h19v2h-19zm7.18-1.73l4.35 1.16 5.31 1.42c.8.21 1.62-.26 1.84-1.06.21-.8-.26-1.62-1.06-1.84l-3.81-1.02-2.26-3.91-1.5-.4v3.28l-1.96-.52-.93-1.61-1.12-.3v2.43l.72.19 1.7.45-.28 1.73z" />
+      </svg>
+      <p class="flight-list__presearch-title">Where would you like to go?</p>
+      <p class="flight-list__presearch-message">Enter your origin and destination to see available flights</p>
+    </div>
+
+    <div v-else-if="store.isLoading" class="flight-list__skeletons" aria-hidden="true">
       <div v-for="n in 4" :key="n" class="skeleton-card">
         <div class="skeleton-line skeleton-line--title" />
         <div class="skeleton-line skeleton-line--meta" />
@@ -98,6 +113,29 @@ const store = useFlightsStore()
 @keyframes shimmer {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.4; }
+}
+
+.flight-list__presearch {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2xl) var(--space-md);
+  text-align: center;
+  gap: var(--space-sm);
+}
+
+.flight-list__presearch-title {
+  font-size: var(--text-lg);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  margin: 0;
+}
+
+.flight-list__presearch-message {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
+  margin: 0;
 }
 
 .flight-list__empty {

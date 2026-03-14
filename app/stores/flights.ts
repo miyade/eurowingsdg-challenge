@@ -96,6 +96,12 @@ export const useFlightsStore = defineStore('flights', () => {
     return result
   })
 
+  const hasMinimumFilters = computed<boolean>(
+    () =>
+      typeof filters.value.origin === 'string' && filters.value.origin.length > 0 &&
+      typeof filters.value.destination === 'string' && filters.value.destination.length > 0,
+  )
+
   const availableOrigins = computed<string[]>(() =>
     [...new Set(flights.value.map((f) => f.origin))].sort(),
   )
@@ -147,6 +153,7 @@ export const useFlightsStore = defineStore('flights', () => {
     filters,
     sortKey,
     filteredAndSortedFlights,
+    hasMinimumFilters,
     availableOrigins,
     availableDestinations,
     fetchFlights,

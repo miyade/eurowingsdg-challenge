@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useFlightsStore } from '~/stores/flights'
 
-const { fetchFlights } = useFlightsStore()
-await fetchFlights()
+const store = useFlightsStore()
+await store.fetchFlights()
 </script>
 
 <template>
@@ -11,7 +11,7 @@ await fetchFlights()
     <div class="page__hero" aria-hidden="true" />
     <main class="page__content">
       <FlightFilters />
-      <FlightControls />
+      <FlightControls v-if="store.hasMinimumFilters" />
       <FlightList />
     </main>
   </div>

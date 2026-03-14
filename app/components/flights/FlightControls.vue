@@ -60,22 +60,6 @@ const filterChips = computed(() => [
     onToggle: () =>
       store.setFilters({ lowSeatsOnly: store.filters.lowSeatsOnly === true ? undefined : true }),
   },
-  {
-    label: 'ExactMatch',
-    active: store.filters.offerType === 'ExactMatch',
-    onToggle: () =>
-      store.setFilters({
-        offerType: store.filters.offerType === 'ExactMatch' ? undefined : 'ExactMatch',
-      }),
-  },
-  {
-    label: 'Best Price',
-    active: store.filters.offerType === 'amadeusBestPrice',
-    onToggle: () =>
-      store.setFilters({
-        offerType: store.filters.offerType === 'amadeusBestPrice' ? undefined : 'amadeusBestPrice',
-      }),
-  },
 ])
 </script>
 

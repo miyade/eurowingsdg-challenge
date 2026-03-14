@@ -6,7 +6,7 @@ import type { Flight } from '#shared/types/flight'
 
 function mockFlight(index: number): Flight {
   return {
-    origin: `OR${index}`,
+    origin: 'DUS',
     destination: 'BCN',
     departureDate: '2026-04-03',
     returnDate: '2026-04-10',
@@ -28,7 +28,15 @@ function mountList(storeOverride: Record<string, unknown> = {}) {
               isLoading: false,
               error: null,
               flights: [],
-              filters: { origin: undefined, destination: undefined, departureDate: undefined, returnDate: undefined },
+              filters: {
+                origin: 'DUS',
+                destination: 'BCN',
+                departureDate: undefined,
+                returnDate: undefined,
+                offerType: undefined,
+                lowSeatsOnly: undefined,
+                maxPrice: undefined,
+              },
               sortKey: 'none',
               ...storeOverride,
             },
