@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { useFlightsStore } from '~/stores/flights'
 
-const store = useFlightsStore()
-await store.fetchFlights()
+const { fetchFlights } = useFlightsStore()
+await fetchFlights()
 </script>
 
 <template>
@@ -11,10 +11,7 @@ await store.fetchFlights()
     <div class="page__hero" aria-hidden="true" />
     <main class="page__content">
       <FlightFilters />
-      <FlightCard
-        v-if="store.flights.length"
-        :flight="store.flights[0]"
-      />
+      <FlightList />
     </main>
   </div>
 </template>

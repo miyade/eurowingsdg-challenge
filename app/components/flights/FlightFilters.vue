@@ -68,15 +68,16 @@ function clearFilters() {
         <label for="filter-origin" class="filters__label">From</label>
         <div class="filters__autocomplete">
           <input
-            id="filter-origin"
-            v-model="origin"
-            type="text"
-            class="filters__input"
-            placeholder="e.g. DUS"
-            autocomplete="off"
-            aria-autocomplete="list"
-            aria-controls="origin-suggestions"
-            :aria-expanded="showOriginSuggestions && originSuggestions.length > 0"
+          id="filter-origin"
+          v-model="origin"
+          type="text"
+          role="combobox"
+          class="filters__input"
+          placeholder="e.g. DUS"
+          autocomplete="off"
+          aria-autocomplete="list"
+          aria-controls="origin-suggestions"
+          :aria-expanded="showOriginSuggestions && originSuggestions.length > 0"
             @focus="showOriginSuggestions = true"
             @blur="blurOrigin"
           />
@@ -105,15 +106,16 @@ function clearFilters() {
         <label for="filter-destination" class="filters__label">To</label>
         <div class="filters__autocomplete">
           <input
-            id="filter-destination"
-            v-model="destination"
-            type="text"
-            class="filters__input"
-            placeholder="e.g. BCN"
-            autocomplete="off"
-            aria-autocomplete="list"
-            aria-controls="destination-suggestions"
-            :aria-expanded="showDestinationSuggestions && destinationSuggestions.length > 0"
+          id="filter-destination"
+          v-model="destination"
+          type="text"
+          role="combobox"
+          class="filters__input"
+          placeholder="e.g. BCN"
+          autocomplete="off"
+          aria-autocomplete="list"
+          aria-controls="destination-suggestions"
+          :aria-expanded="showDestinationSuggestions && destinationSuggestions.length > 0"
             @focus="showDestinationSuggestions = true"
             @blur="blurDestination"
           />
