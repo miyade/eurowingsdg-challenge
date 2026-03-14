@@ -11,6 +11,7 @@ await fetchFlights()
     <div class="page__hero" aria-hidden="true" />
     <main class="page__content">
       <FlightFilters />
+      <FlightControls />
       <FlightList />
     </main>
   </div>
