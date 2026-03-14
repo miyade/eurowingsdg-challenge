@@ -1,8 +1,18 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { computed } from 'vue'
+import type { Ref } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
 import { createTestingPinia } from '@pinia/testing'
 import FlightFilters from '~/components/flights/FlightFilters.vue'
 import { useFlightsStore } from '~/stores/flights'
+
+vi.mock('~/composables/flights/useAirportSearch', () => ({
+  useAirportSearch: (query: Ref<string>) => computed(() =>
+    query.value.length >= 2
+      ? [{ iata: 'DUS', label: 'DUS — Düsseldorf Airport, Germany' }]
+      : []
+  ),
+}))
 
 const initialState = {
   flights: {
