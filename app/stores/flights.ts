@@ -11,6 +11,9 @@ export const useFlightsStore = defineStore('flights', () => {
     destination: undefined,
     departureDate: undefined,
     returnDate: undefined,
+    offerType: undefined,
+    lowSeatsOnly: undefined,
+    maxPrice: undefined,
   })
   const sortKey = ref<FlightSortKey>('none')
 
@@ -40,6 +43,24 @@ export const useFlightsStore = defineStore('flights', () => {
       if (
         filters.value.returnDate !== undefined &&
         flight.returnDate !== filters.value.returnDate
+      ) {
+        return false
+      }
+
+      if (
+        filters.value.offerType !== undefined &&
+        flight.offerType !== filters.value.offerType
+      ) {
+        return false
+      }
+
+      if (filters.value.lowSeatsOnly === true && flight.seatAvailability >= 3) {
+        return false
+      }
+
+      if (
+        filters.value.maxPrice !== undefined &&
+        flight.price.amount > filters.value.maxPrice
       ) {
         return false
       }
@@ -109,6 +130,9 @@ export const useFlightsStore = defineStore('flights', () => {
       destination: undefined,
       departureDate: undefined,
       returnDate: undefined,
+      offerType: undefined,
+      lowSeatsOnly: undefined,
+      maxPrice: undefined,
     }
   }
 

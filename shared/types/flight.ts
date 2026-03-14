@@ -21,6 +21,9 @@ export interface FlightFilters {
   destination: string | undefined
   departureDate: string | undefined
   returnDate: string | undefined
+  offerType: 'ExactMatch' | 'amadeusBestPrice' | undefined
+  lowSeatsOnly: boolean | undefined
+  maxPrice: number | undefined
 }
 
 export type FlightSortKey = 'price-asc' | 'price-desc' | 'date-asc' | 'date-desc' | 'none'
