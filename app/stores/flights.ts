@@ -21,14 +21,14 @@ export const useFlightsStore = defineStore('flights', () => {
     let result = flights.value.filter((flight) => {
       if (
         filters.value.origin !== undefined &&
-        flight.origin.toLowerCase() !== filters.value.origin.toLowerCase()
+        !flight.origin.toLowerCase().startsWith(filters.value.origin.toLowerCase())
       ) {
         return false
       }
 
       if (
         filters.value.destination !== undefined &&
-        flight.destination.toLowerCase() !== filters.value.destination.toLowerCase()
+        !flight.destination.toLowerCase().startsWith(filters.value.destination.toLowerCase())
       ) {
         return false
       }
@@ -98,8 +98,8 @@ export const useFlightsStore = defineStore('flights', () => {
 
   const hasMinimumFilters = computed<boolean>(
     () =>
-      typeof filters.value.origin === 'string' && filters.value.origin.length > 0 &&
-      typeof filters.value.destination === 'string' && filters.value.destination.length > 0,
+      typeof filters.value.origin === 'string' && filters.value.origin.length >= 3 &&
+      typeof filters.value.destination === 'string' && filters.value.destination.length >= 3,
   )
 
   const availableOrigins = computed<string[]>(() =>
