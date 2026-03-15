@@ -8,7 +8,7 @@ const props = defineProps<{
 </script>
 
 <template>
-  <article class="flight-card">
+  <article class="flight-card" :class="{ 'flight-card--best-price': props.flight.offerType === 'amadeusBestPrice' }">
     <div class="flight-route">
       <div class="flight-route__origin">
         <span class="flight-route__code">{{ props.flight.origin }}</span>
@@ -23,7 +23,12 @@ const props = defineProps<{
 
     <div class="flight-meta">
       <span>{{ getTripDuration(props.flight.departureDate, props.flight.returnDate) }} days</span>
-      <span>{{ props.flight.offerType }}</span>
+      <span v-if="props.flight.offerType === 'amadeusBestPrice'" class="flight-badge flight-badge--best-price">
+        Best price
+        <span class="flight-badge__tooltip">
+          Lowest price for this route with the same trip duration. Travel dates may differ from your search.
+        </span>
+      </span>
     </div>
 
     <div class="flight-price">
@@ -129,6 +134,49 @@ const props = defineProps<{
   color: var(--color-error);
   font-weight: var(--font-semibold);
   align-self: flex-start;
+}
+
+.flight-card--best-price {
+  background: #fffbf0;
+  border-left: 3px solid #f59e0b;
+}
+
+.flight-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: var(--radius-lg);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: var(--font-semibold);
+  position: relative;
+  cursor: default;
+}
+
+.flight-badge--best-price {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.flight-badge__tooltip {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 0;
+  background: var(--color-neutral-900);
+  color: var(--color-white);
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: var(--font-normal);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  width: 220px;
+  line-height: 1.4;
+  z-index: 50;
+  pointer-events: none;
+}
+
+.flight-badge:hover .flight-badge__tooltip {
+  display: block;
 }
 
 @media (min-width: 640px) {

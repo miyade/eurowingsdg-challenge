@@ -54,7 +54,7 @@ for (const [origin, destination] of ROUTES) {
     const amount = Math.min(399, Math.max(49, Math.round(basePrice + priceVariation)))
     const lowSeatChance = (uuidSeed + i) % 12
     const seatAvailability = lowSeatChance === 0 ? 1 : lowSeatChance === 1 ? 2 : 4 + (uuidSeed + i) % 6
-    const offerType = OFFER_TYPES[(uuidSeed + i) % 2]
+    const offerType = OFFER_TYPES[i % 2]
 
     flights.push({
       origin,

@@ -7,7 +7,7 @@ const store = useFlightsStore()
 <template>
   <section aria-label="Flight results" aria-live="polite" aria-atomic="false">
 
-    <div v-if="!store.hasMinimumFilters" class="flight-list__presearch" role="status">
+    <div v-if="!store.hasAllFilters" class="flight-list__presearch" role="status">
       <svg
         aria-hidden="true"
         width="48"
@@ -19,7 +19,7 @@ const store = useFlightsStore()
         <path d="M2.5 19h19v2h-19zm7.18-1.73l4.35 1.16 5.31 1.42c.8.21 1.62-.26 1.84-1.06.21-.8-.26-1.62-1.06-1.84l-3.81-1.02-2.26-3.91-1.5-.4v3.28l-1.96-.52-.93-1.61-1.12-.3v2.43l.72.19 1.7.45-.28 1.73z" />
       </svg>
       <p class="flight-list__presearch-title">Where would you like to go?</p>
-      <p class="flight-list__presearch-message">Enter your origin and destination to see available flights</p>
+      <p class="flight-list__presearch-message">Enter your origin, destination, and dates to see available flights</p>
     </div>
 
     <div v-else-if="store.isLoading" class="flight-list__skeletons" aria-hidden="true">
@@ -53,11 +53,27 @@ const store = useFlightsStore()
       <p class="flight-list__count" aria-live="polite" role="status">
         {{ store.filteredAndSortedFlights.length }} flight(s) found
       </p>
-      <ul class="flight-list__grid" role="list">
-        <li v-for="flight in store.filteredAndSortedFlights" :key="flight.uuid">
-          <FlightCard :flight="flight" />
-        </li>
-      </ul>
+
+      <div v-if="store.exactMatchFlights.length > 0" class="flight-list__section">
+        <h2 class="flight-list__section-title">Your dates</h2>
+        <ul class="flight-list__grid" role="list">
+          <li v-for="flight in store.exactMatchFlights" :key="flight.uuid">
+            <FlightCard :flight="flight" />
+          </li>
+        </ul>
+      </div>
+
+      <div v-if="store.bestPriceFlights.length > 0" class="flight-list__section">
+        <h2 class="flight-list__section-title">
+          Best price alternatives
+          <span class="flight-list__section-subtitle">Flexible dates</span>
+        </h2>
+        <ul class="flight-list__grid" role="list">
+          <li v-for="flight in store.bestPriceFlights" :key="flight.uuid">
+            <FlightCard :flight="flight" />
+          </li>
+        </ul>
+      </div>
     </div>
 
   </section>
@@ -165,6 +181,26 @@ const store = useFlightsStore()
   font-size: var(--text-sm);
   color: var(--color-neutral-700);
   margin: 0 0 var(--space-sm) 0;
+}
+
+.flight-list__section {
+  margin-bottom: var(--space-xl);
+}
+
+.flight-list__section-title {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--color-neutral-700);
+  margin: 0 0 var(--space-sm) 0;
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.flight-list__section-subtitle {
+  font-size: var(--text-xs, 0.75rem);
+  font-weight: var(--font-normal);
+  color: var(--color-neutral-500);
 }
 
 @media (min-width: 640px) {

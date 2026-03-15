@@ -31,8 +31,8 @@ function mountList(storeOverride: Record<string, unknown> = {}) {
               filters: {
                 origin: 'DUS',
                 destination: 'BCN',
-                departureDate: undefined,
-                returnDate: undefined,
+                departureDate: '2026-04-03',
+                returnDate: '2026-04-10',
                 offerType: undefined,
                 lowSeatsOnly: undefined,
                 maxPrice: undefined,

@@ -32,9 +32,18 @@ describe('FlightCard', () => {
     expect(wrapper.text()).toContain('7 days')
   })
 
-  it('renders offerType', () => {
+  it('does not show Best price badge for ExactMatch', () => {
     const wrapper = mount(FlightCard, { props: { flight: mockFlight } })
-    expect(wrapper.text()).toContain('ExactMatch')
+    expect(wrapper.text()).not.toContain('Best price')
+    expect(wrapper.find('.flight-card--best-price').exists()).toBe(false)
+  })
+
+  it('shows Best price badge and modifier class for amadeusBestPrice', () => {
+    const wrapper = mount(FlightCard, {
+      props: { flight: { ...mockFlight, offerType: 'amadeusBestPrice' } },
+    })
+    expect(wrapper.text()).toContain('Best price')
+    expect(wrapper.find('.flight-card--best-price').exists()).toBe(true)
   })
 
   it('does not show availability warning when seats >= 3', () => {

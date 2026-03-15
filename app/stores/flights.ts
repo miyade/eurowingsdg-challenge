@@ -17,6 +17,12 @@ export const useFlightsStore = defineStore('flights', () => {
   })
   const sortKey = ref<FlightSortKey>('none')
 
+  function getTripDays(dep: string, ret: string): number {
+    const d1 = new Date(dep + 'T12:00:00Z')
+    const d2 = new Date(ret + 'T12:00:00Z')
+    return Math.round((d2.getTime() - d1.getTime()) / (1000 * 60 * 60 * 24))
+  }
+
   const filteredAndSortedFlights = computed<Flight[]>(() => {
     let result = flights.value.filter((flight) => {
       if (
@@ -33,18 +39,16 @@ export const useFlightsStore = defineStore('flights', () => {
         return false
       }
 
-      if (
-        filters.value.departureDate !== undefined &&
-        flight.departureDate !== filters.value.departureDate
-      ) {
-        return false
+      if (flight.offerType === 'ExactMatch') {
+        if (filters.value.departureDate && flight.departureDate !== filters.value.departureDate) return false
+        if (filters.value.returnDate && flight.returnDate !== filters.value.returnDate) return false
       }
-
-      if (
-        filters.value.returnDate !== undefined &&
-        flight.returnDate !== filters.value.returnDate
-      ) {
-        return false
+      else if (flight.offerType === 'amadeusBestPrice') {
+        if (filters.value.departureDate && filters.value.returnDate) {
+          const searchedDuration = getTripDays(filters.value.departureDate, filters.value.returnDate)
+          const flightDuration = getTripDays(flight.departureDate, flight.returnDate)
+          if (flightDuration !== searchedDuration) return false
+        }
       }
 
       if (
@@ -96,10 +100,25 @@ export const useFlightsStore = defineStore('flights', () => {
     return result
   })
 
+  const exactMatchFlights = computed(() =>
+    filteredAndSortedFlights.value.filter(f => f.offerType === 'ExactMatch'),
+  )
+
+  const bestPriceFlights = computed(() =>
+    filteredAndSortedFlights.value.filter(f => f.offerType === 'amadeusBestPrice'),
+  )
+
   const hasMinimumFilters = computed<boolean>(
     () =>
       typeof filters.value.origin === 'string' && filters.value.origin.length >= 3 &&
       typeof filters.value.destination === 'string' && filters.value.destination.length >= 3,
+  )
+
+  const hasAllFilters = computed<boolean>(
+    () =>
+      hasMinimumFilters.value &&
+      typeof filters.value.departureDate === 'string' && filters.value.departureDate.length > 0 &&
+      typeof filters.value.returnDate === 'string' && filters.value.returnDate.length > 0,
   )
 
   const availableOrigins = computed<string[]>(() =>
@@ -270,7 +289,10 @@ export const useFlightsStore = defineStore('flights', () => {
     filters,
     sortKey,
     filteredAndSortedFlights,
+    exactMatchFlights,
+    bestPriceFlights,
     hasMinimumFilters,
+    hasAllFilters,
     availableOrigins,
     availableDestinations,
     maxPriceBound,

@@ -2,8 +2,8 @@
 import { useFlightsStore } from '~/stores/flights'
 
 const store = useFlightsStore()
-store.useUrlSync()
 await store.fetchFlights()
+store.useUrlSync()
 </script>
 
 <template>
@@ -11,9 +11,11 @@ await store.fetchFlights()
     <AppHeader />
     <div class="page__hero" aria-hidden="true" />
     <main class="page__content">
+      <ClientOnly>
       <FlightFilters />
-      <FlightControls v-if="store.hasMinimumFilters" />
+      <FlightControls v-if="store.hasAllFilters" />
       <FlightList />
+      </ClientOnly>
     </main>
   </div>
 </template>
