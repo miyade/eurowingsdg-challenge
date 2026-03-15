@@ -160,4 +160,16 @@ onUnmounted(() => {
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
 }
+
+@media (max-width: 480px) {
+  .filters__datepicker-popover {
+    position: fixed;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    margin-top: 0;
+    width: fit-content;
+    max-width: calc(100vw - 2 * var(--space-md));
+  }
+}
 </style>

@@ -243,7 +243,16 @@ const filterChips = computed(() => [
   box-shadow: var(--shadow-card);
   padding: var(--space-md);
   width: 220px;
+  max-width: min(220px, calc(100vw - var(--space-md) * 2));
   z-index: 50;
+}
+
+@media (max-width: 480px) {
+  .price-popover {
+    right: 0;
+    left: auto;
+    width: min(220px, calc(100vw - var(--space-md) * 2));
+  }
 }
 
 .price-popover__header {
@@ -251,6 +260,8 @@ const filterChips = computed(() => [
   justify-content: space-between;
   align-items: center;
   margin-bottom: var(--space-sm);
+  gap: var(--space-sm);
+  min-width: 0;
 }
 
 .price-popover__label {
@@ -263,6 +274,9 @@ const filterChips = computed(() => [
   font-size: var(--text-sm);
   font-weight: var(--font-bold);
   color: var(--color-primary);
+  min-width: 4ch;
+  text-align: right;
+  flex-shrink: 0;
 }
 
 .price-popover__slider {
