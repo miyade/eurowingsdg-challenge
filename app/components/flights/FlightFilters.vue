@@ -70,11 +70,23 @@ watch(
 )
 
 function clearFilters() {
-  origin.value = ''
-  destination.value = ''
-  departureDate.value = ''
-  returnDate.value = ''
-  store.resetFilters()
+  const router = typeof useRouter === 'function' ? useRouter() : undefined
+  if (router?.replace) {
+    router.replace({ query: {} }).then(() => {
+      store.resetFilters()
+      origin.value = ''
+      destination.value = ''
+      departureDate.value = ''
+      returnDate.value = ''
+    })
+  }
+  else {
+    store.resetFilters()
+    origin.value = ''
+    destination.value = ''
+    departureDate.value = ''
+    returnDate.value = ''
+  }
 }
 </script>
 
