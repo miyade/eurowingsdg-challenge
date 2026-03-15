@@ -212,6 +212,34 @@ function clearFilters() {
   transition: border-color var(--transition-default);
   box-sizing: border-box;
   min-height: 44px;
+  -webkit-appearance: none;
+  appearance: none;
+  font-family: inherit;
+}
+
+.filters__input[type="date"] {
+  display: flex;
+  align-items: center;
+}
+
+.filters__input[type="date"]::-webkit-datetime-edit {
+  color: var(--color-neutral-900);
+  padding: 0;
+}
+
+.filters__input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+  padding: 0;
+}
+
+.filters__input[type="date"]::-webkit-date-and-time-value {
+  color: var(--color-neutral-900);
+  min-height: 1.2em;
+  text-align: left;
+}
+
+.filters__input[type="date"]::-webkit-calendar-picker-indicator {
+  opacity: 0.6;
+  cursor: pointer;
 }
 
 .filters__input:focus {
