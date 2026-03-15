@@ -51,7 +51,7 @@ test('low seats chip filters flights correctly', async ({ page }) => {
   await expect(page.locator('.flight-card').first()).toBeVisible({ timeout: 10000 })
   await page.getByRole('button', { name: 'Low seats' }).click()
   await expect(page.locator('.flight-card').first()).toBeVisible()
-  await expect(page.getByText(/Only.*seats left/)).toBeVisible()
+  await expect(page.getByText(/Only.*seats left/).first()).toBeVisible()
 })
 
 test('sort by price ascending orders flights correctly', async ({ page }) => {

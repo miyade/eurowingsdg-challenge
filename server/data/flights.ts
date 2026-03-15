@@ -1,174 +1,72 @@
 import type { Flight } from '#shared/types/flight'
 
-export const flights: Flight[] = [
-  {
-    origin: 'DUS',
-    destination: 'BCN',
-    departureDate: '2026-04-03',
-    returnDate: '2026-04-10',
-    seatAvailability: 7,
-    price: { amount: 112.99, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: '3f1e2d4c-8a7b-4c6d-9e0f-1a2b3c4d5e6f',
-  },
-  {
-    origin: 'DUS',
-    destination: 'BCN',
-    departureDate: '2026-04-03',
-    returnDate: '2026-04-10',
-    seatAvailability: 7,
-    price: { amount: 119.99, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: '3r1e2d4c-8a7b-4c6d-9e0f-1a2b3c4d5e6f',
-  },
-  {
-    origin: 'DUS',
-    destination: 'BCN',
-    departureDate: '2026-04-03',
-    returnDate: '2026-04-10',
-    seatAvailability: 7,
-    price: { amount: 140.99, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: '3f1e2d3c-8a7b-4c6d-9e0f-1a2b3c4d5e6f',
-  },
-  {
-    origin: 'HAM',
-    destination: 'FCO',
-    departureDate: '2026-04-15',
-    returnDate: '2026-04-22',
-    seatAvailability: 2,
-    price: { amount: 89.50, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d',
-  },
-  {
-    origin: 'BER',
-    destination: 'MAD',
-    departureDate: '2026-04-20',
-    returnDate: '2026-04-27',
-    seatAvailability: 5,
-    price: { amount: 134.00, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e',
-  },
-  {
-    origin: 'MUC',
-    destination: 'LHR',
-    departureDate: '2026-05-02',
-    returnDate: '2026-05-09',
-    seatAvailability: 9,
-    price: { amount: 159.99, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f',
-  },
-  {
-    origin: 'VIE',
-    destination: 'AMS',
-    departureDate: '2026-05-10',
-    returnDate: '2026-05-17',
-    seatAvailability: 6,
-    price: { amount: 98.00, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'd4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a',
-  },
-  {
-    origin: 'FCO',
-    destination: 'ZRH',
-    departureDate: '2026-05-18',
-    returnDate: '2026-05-25',
-    seatAvailability: 1,
-    price: { amount: 74.50, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'e5f6a7b8-c9d0-4e1f-2a3b-4c5d6e7f8a9b',
-  },
-  {
-    origin: 'BCN',
-    destination: 'PRG',
-    departureDate: '2026-05-25',
-    returnDate: '2026-06-01',
-    seatAvailability: 8,
-    price: { amount: 210.00, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'f6a7b8c9-d0e1-4f2a-3b4c-5d6e7f8a9b0c',
-  },
-  {
-    origin: 'CDG',
-    destination: 'DUS',
-    departureDate: '2026-06-05',
-    returnDate: '2026-06-12',
-    seatAvailability: 4,
-    price: { amount: 88.00, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'a7b8c9d0-e1f2-4a3b-4c5d-6e7f8a9b0c1d',
-  },
-  {
-    origin: 'LHR',
-    destination: 'WAW',
-    departureDate: '2026-06-14',
-    returnDate: '2026-06-21',
-    seatAvailability: 7,
-    price: { amount: 176.00, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'b8c9d0e1-f2a3-4b4c-5d6e-7f8a9b0c1d2e',
-  },
-  {
-    origin: 'MAD',
-    destination: 'BER',
-    departureDate: '2026-06-20',
-    returnDate: '2026-06-29',
-    seatAvailability: 2,
-    price: { amount: 129.99, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'c9d0e1f2-a3b4-4c5d-6e7f-8a9b0c1d2e3f',
-  },
-  {
-    origin: 'AMS',
-    destination: 'LIS',
-    departureDate: '2026-07-01',
-    returnDate: '2026-07-10',
-    seatAvailability: 5,
-    price: { amount: 245.00, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'd0e1f2a3-b4c5-4d6e-7f8a-9b0c1d2e3f4a',
-  },
-  {
-    origin: 'ZRH',
-    destination: 'MUC',
-    departureDate: '2026-07-08',
-    returnDate: '2026-07-15',
-    seatAvailability: 9,
-    price: { amount: 62.00, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'e1f2a3b4-c5d6-4e7f-8a9b-0c1d2e3f4a5b',
-  },
-  {
-    origin: 'PRG',
-    destination: 'VIE',
-    departureDate: '2026-07-12',
-    returnDate: '2026-07-19',
-    seatAvailability: 6,
-    price: { amount: 49.99, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'f2a3b4c5-d6e7-4f8a-9b0c-1d2e3f4a5b6c',
-  },
-  {
-    origin: 'WAW',
-    destination: 'CDG',
-    departureDate: '2026-07-20',
-    returnDate: '2026-07-28',
-    seatAvailability: 8,
-    price: { amount: 398.00, currency: 'EUR' },
-    offerType: 'amadeusBestPrice',
-    uuid: 'a3b4c5d6-e7f8-4a9b-0c1d-2e3f4a5b6c7d',
-  },
-  {
-    origin: 'LIS',
-    destination: 'HAM',
-    departureDate: '2026-07-25',
-    returnDate: '2026-07-30',
-    seatAvailability: 4,
-    price: { amount: 183.50, currency: 'EUR' },
-    offerType: 'ExactMatch',
-    uuid: 'b4c5d6e7-f8a9-4b0c-1d2e-3f4a5b6c7d8e',
-  },
+const OFFER_TYPES: Flight['offerType'][] = ['ExactMatch', 'amadeusBestPrice']
+
+function uuid(seed: number): string {
+  const hex = (n: number) => Math.floor(Math.abs(n)).toString(16).padStart(8, '0').slice(-8)
+  return `${hex(seed)}-${hex(seed * 31)}-4${hex(seed * 17).slice(1)}-a${hex(seed * 13).slice(1)}-${hex(seed * 7)}${hex(seed * 11)}`
+}
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(iso + 'T12:00:00Z')
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+const ROUTES: [string, string][] = [
+  ['DUS', 'BCN'], ['DUS', 'MAD'], ['DUS', 'FCO'], ['DUS', 'AMS'], ['DUS', 'LHR'],
+  ['HAM', 'FCO'], ['HAM', 'BCN'], ['HAM', 'MUC'], ['HAM', 'VIE'],
+  ['BER', 'MAD'], ['BER', 'BCN'], ['BER', 'LIS'], ['BER', 'PRG'],
+  ['MUC', 'LHR'], ['MUC', 'BCN'], ['MUC', 'CDG'], ['MUC', 'ZRH'],
+  ['VIE', 'AMS'], ['VIE', 'BCN'], ['VIE', 'FCO'],
+  ['FCO', 'ZRH'], ['FCO', 'BCN'], ['FCO', 'MAD'],
+  ['BCN', 'PRG'], ['BCN', 'LIS'], ['BCN', 'WAW'],
+  ['CDG', 'DUS'], ['CDG', 'MAD'], ['CDG', 'LHR'],
+  ['AMS', 'LIS'], ['AMS', 'BCN'], ['LHR', 'WAW'], ['LHR', 'PRG'],
+  ['MAD', 'BER'], ['MAD', 'FCO'], ['LIS', 'HAM'], ['LIS', 'MAD'],
+  ['PRG', 'VIE'], ['PRG', 'BCN'], ['WAW', 'CDG'], ['ZRH', 'MUC'],
 ]
+
+const START = '2026-04-01'
+const END = '2026-07-30'
+
+function dateInRange(date: string): boolean {
+  return date >= START && date <= END
+}
+
+const flights: Flight[] = []
+let uuidSeed = 1
+
+for (const [origin, destination] of ROUTES) {
+  const basePrice = 49 + (uuidSeed % 320)
+  const numFlights = 10 + (uuidSeed % 9)
+
+  for (let i = 0; i < numFlights; i++) {
+    const dayOffset = (uuidSeed * 5 + i * 13) % 100
+    const departureDate = addDays(START, dayOffset)
+    if (!dateInRange(departureDate)) continue
+
+    const tripDays = 3 + (uuidSeed + i) % 14
+    const returnDate = addDays(departureDate, tripDays)
+    if (!dateInRange(returnDate)) continue
+
+    const priceVariation = (i % 6) * 12 + (uuidSeed % 25)
+    const amount = Math.min(399, Math.max(49, Math.round(basePrice + priceVariation)))
+    const lowSeatChance = (uuidSeed + i) % 12
+    const seatAvailability = lowSeatChance === 0 ? 1 : lowSeatChance === 1 ? 2 : 4 + (uuidSeed + i) % 6
+    const offerType = OFFER_TYPES[(uuidSeed + i) % 2]
+
+    flights.push({
+      origin,
+      destination,
+      departureDate,
+      returnDate,
+      seatAvailability,
+      price: { amount, currency: 'EUR' },
+      offerType,
+      uuid: uuid(uuidSeed++),
+    })
+  }
+}
+
+export { flights }

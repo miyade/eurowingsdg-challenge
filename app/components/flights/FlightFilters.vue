@@ -70,6 +70,66 @@ function blurDestination() {
   setTimeout(() => { showDestinationSuggestions.value = false }, 150)
 }
 
+const canSelectDates = computed(() =>
+  origin.value.length >= 3 && destination.value.length >= 3,
+)
+
+const availableDepartureDatesForRoute = computed(() => {
+  if (!canSelectDates.value) return new Set<string>()
+  return new Set(
+    store.flights
+      .filter(
+        (f) =>
+          f.origin.toLowerCase() === origin.value.toLowerCase() &&
+          f.destination.toLowerCase() === destination.value.toLowerCase(),
+      )
+      .map((f) => f.departureDate),
+  )
+})
+
+const availableReturnDatesForRoute = computed(() => {
+  if (!canSelectDates.value) return new Set<string>()
+  return new Set(
+    store.flights
+      .filter(
+        (f) =>
+          f.origin.toLowerCase() === origin.value.toLowerCase() &&
+          f.destination.toLowerCase() === destination.value.toLowerCase() &&
+          (!departureDate.value || f.departureDate === departureDate.value),
+      )
+      .map((f) => f.returnDate),
+  )
+})
+
+function addDaysStr(iso: string, days: number): string {
+  const d = new Date(iso + 'T12:00:00Z')
+  d.setUTCDate(d.getUTCDate() + days)
+  return d.toISOString().slice(0, 10)
+}
+
+function buildDisabledRanges(
+  enabledSet: Set<string>,
+  minStr: string,
+  maxStr: string,
+): { start: string; end: string }[] {
+  const enabled = [...enabledSet].filter((d) => d >= minStr && d <= maxStr).sort()
+  if (enabled.length === 0) return []
+  const ranges: { start: string; end: string }[] = []
+  if (enabled[0] > minStr) {
+    ranges.push({ start: minStr, end: addDaysStr(enabled[0], -1) })
+  }
+  for (let i = 0; i < enabled.length - 1; i++) {
+    const start = addDaysStr(enabled[i], 1)
+    const end = addDaysStr(enabled[i + 1], -1)
+    if (start <= end) ranges.push({ start, end })
+  }
+  const last = enabled[enabled.length - 1]
+  if (addDaysStr(last, 1) <= maxStr) {
+    ranges.push({ start: addDaysStr(last, 1), end: maxStr })
+  }
+  return ranges
+}
+
 const today = new Date().toISOString().split('T')[0]
 
 const availableDepartureDates = computed(() =>
@@ -94,17 +154,42 @@ const returnMinDateObj = computed(() => {
   return new Date(s + 'T12:00:00')
 })
 
+const maxDepartureStr = computed(() =>
+  maxDepartureDateObj.value ? maxDepartureDateObj.value.toISOString().split('T')[0] : today,
+)
+const maxReturnStr = computed(() =>
+  maxReturnDateObj.value ? maxReturnDateObj.value.toISOString().split('T')[0] : today,
+)
+
+const disabledDepartureDatesRanges = computed(() => {
+  if (!canSelectDates.value) return []
+  return buildDisabledRanges(availableDepartureDatesForRoute.value, today, maxDepartureStr.value)
+})
+
+const disabledReturnDatesRanges = computed(() => {
+  if (!canSelectDates.value) return []
+  const minStr = departureDate.value || today
+  return buildDisabledRanges(availableReturnDatesForRoute.value, minStr, maxReturnStr.value)
+})
+
+function dateToLocalYYYYMMDD(d: Date): string {
+  const y = d.getFullYear()
+  const m = String(d.getMonth() + 1).padStart(2, '0')
+  const day = String(d.getDate()).padStart(2, '0')
+  return `${y}-${m}-${day}`
+}
+
 const departureDateModel = computed({
   get: () => departureDate.value ? new Date(departureDate.value + 'T12:00:00') : null,
   set: (val: Date | null) => {
-    departureDate.value = val ? val.toISOString().split('T')[0] : ''
+    departureDate.value = val ? dateToLocalYYYYMMDD(val) : ''
   },
 })
 
 const returnDateModel = computed({
   get: () => returnDate.value ? new Date(returnDate.value + 'T12:00:00') : null,
   set: (val: Date | null) => {
-    returnDate.value = val ? val.toISOString().split('T')[0] : ''
+    returnDate.value = val ? dateToLocalYYYYMMDD(val) : ''
   },
 })
 
@@ -145,6 +230,15 @@ onUnmounted(() => {
 
 watch(departureDate, (newDep) => {
   if (returnDate.value && newDep && returnDate.value < newDep) {
+    returnDate.value = ''
+  }
+})
+
+watch([origin, destination], () => {
+  if (departureDate.value && !availableDepartureDatesForRoute.value.has(departureDate.value)) {
+    departureDate.value = ''
+  }
+  if (returnDate.value && !availableReturnDatesForRoute.value.has(returnDate.value)) {
     returnDate.value = ''
   }
 })
@@ -245,11 +339,15 @@ function clearFilters() {
           id="filter-departure"
           type="button"
           class="filters__input filters__datepicker-trigger"
-          :class="{ 'filters__datepicker-trigger--active': departureDate }"
+          :class="{
+            'filters__datepicker-trigger--active': departureDate,
+            'filters__datepicker-trigger--disabled': !canSelectDates,
+          }"
           aria-label="Departure date"
           aria-haspopup="dialog"
           :aria-expanded="showDeparturePicker"
-          @click="showDeparturePicker = !showDeparturePicker"
+          :disabled="!canSelectDates"
+          @click="canSelectDates && (showDeparturePicker = !showDeparturePicker)"
         >
           <span>{{ departureDate ? formatDisplay(departureDate) : 'dd.mm.yyyy' }}</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -264,6 +362,7 @@ function clearFilters() {
             v-model="departureDateModel"
             :min-date="minDepartureDateObj"
             :max-date="maxDepartureDateObj"
+            :disabled-dates="disabledDepartureDatesRanges"
             @dayclick="(_, event) => (event?.target as HTMLElement)?.blur()"
             @update:model-value="onDeparturePicked"
           />
@@ -277,11 +376,15 @@ function clearFilters() {
           id="filter-return"
           type="button"
           class="filters__input filters__datepicker-trigger"
-          :class="{ 'filters__datepicker-trigger--active': returnDate }"
+          :class="{
+            'filters__datepicker-trigger--active': returnDate,
+            'filters__datepicker-trigger--disabled': !canSelectDates,
+          }"
           aria-label="Return date"
           aria-haspopup="dialog"
           :aria-expanded="showReturnPicker"
-          @click="showReturnPicker = !showReturnPicker"
+          :disabled="!canSelectDates"
+          @click="canSelectDates && (showReturnPicker = !showReturnPicker)"
         >
           <span>{{ returnDate ? formatDisplay(returnDate) : 'dd.mm.yyyy' }}</span>
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -296,6 +399,7 @@ function clearFilters() {
             v-model="returnDateModel"
             :min-date="returnMinDateObj"
             :max-date="maxReturnDateObj"
+            :disabled-dates="disabledReturnDatesRanges"
             @dayclick="(_, event) => (event?.target as HTMLElement)?.blur()"
             @update:model-value="onReturnPicked"
           />
@@ -407,6 +511,12 @@ function clearFilters() {
 
 .filters__datepicker-trigger--active {
   color: var(--color-neutral-900);
+}
+
+.filters__datepicker-trigger--disabled {
+  background: var(--color-neutral-100);
+  cursor: not-allowed;
+  opacity: 0.7;
 }
 
 .filters__datepicker-popover {
