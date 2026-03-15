@@ -2,7 +2,7 @@
 import { useFlightsStore } from '~/stores/flights'
 
 const store = useFlightsStore()
-await store.fetchFlights()
+store.fetchFlights()
 store.useUrlSync()
 </script>
 

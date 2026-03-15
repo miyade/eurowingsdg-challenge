@@ -1,7 +1,12 @@
 <script setup lang="ts">
+import { defineAsyncComponent } from 'vue'
 import { useFlightsStore } from '~/stores/flights'
 
 const store = useFlightsStore()
+
+const FlightCard = defineAsyncComponent(() =>
+  import('~/components/flights/FlightCard.vue'),
+)
 </script>
 
 <template>

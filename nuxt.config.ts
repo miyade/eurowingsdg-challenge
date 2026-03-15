@@ -25,4 +25,17 @@ export default defineNuxtConfig({
       { path: '~/components', pathPrefix: false }
     ]
   },
+  vite: {
+    build: {
+      sourcemap: false,
+      rollupOptions: {
+        output: {
+          manualChunks: (id) => {
+            if (id.includes('node_modules/v-calendar')) return 'v-calendar'
+            if (id.includes('node_modules/pinia')) return 'pinia'
+          },
+        },
+      },
+    },
+  },
 })

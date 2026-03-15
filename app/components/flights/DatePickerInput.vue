@@ -1,7 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, nextTick, onMounted, onUnmounted } from 'vue'
-import { DatePicker } from 'v-calendar'
-import 'v-calendar/style.css'
+import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
 const props = withDefaults(
   defineProps<{
@@ -22,6 +20,23 @@ const emit = defineEmits<{
 
 const showPicker = ref(false)
 const wrapperRef = ref<HTMLElement | null>(null)
+const DatePickerComponent = ref<typeof import('v-calendar').DatePicker | null>(null)
+const calendarLoading = ref(false)
+
+watch(showPicker, async (open) => {
+  if (open && !DatePickerComponent.value && !calendarLoading.value) {
+    calendarLoading.value = true
+    try {
+      const [calendarMod] = await Promise.all([
+        import('v-calendar'),
+        import('v-calendar/style.css'),
+      ])
+      DatePickerComponent.value = calendarMod.DatePicker
+    } finally {
+      calendarLoading.value = false
+    }
+  }
+})
 
 function dateToLocalYYYYMMDD(d: Date): string {
   const y = d.getFullYear()
@@ -98,14 +113,20 @@ onUnmounted(() => {
       </svg>
     </button>
     <div v-if="showPicker" class="filters__datepicker-popover">
-      <DatePicker
-        v-model="dateModel"
-        :min-date="minDate"
-        :max-date="maxDate"
-        :disabled-dates="disabledDates"
-        @dayclick="(_, event) => (event?.target as HTMLElement)?.blur()"
-        @update:model-value="onPicked"
-      />
+      <div v-if="calendarLoading" class="filters__datepicker-loading" aria-hidden="true">
+        <span class="filters__datepicker-loading-text">Loading…</span>
+      </div>
+      <template v-else-if="DatePickerComponent">
+        <component
+          :is="DatePickerComponent"
+          v-model="dateModel"
+          :min-date="minDate"
+          :max-date="maxDate"
+          :disabled-dates="disabledDates"
+          @dayclick="(_, event) => (event?.target as HTMLElement)?.blur()"
+          @update:model-value="onPicked"
+        />
+      </template>
     </div>
   </div>
 </template>
@@ -164,6 +185,20 @@ onUnmounted(() => {
   border: 1.5px solid var(--color-neutral-200);
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-card);
+}
+
+.filters__datepicker-loading {
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 280px;
+  min-height: 280px;
+}
+
+.filters__datepicker-loading-text {
+  font-size: var(--text-sm);
+  color: var(--color-neutral-500);
 }
 
 @media (max-width: 480px) {
