@@ -108,13 +108,21 @@ export function useFlightDateConstraints(
 
   const disabledDepartureDatesRanges = computed(() => {
     if (!canSelectDates.value) return []
-    return buildDisabledRanges(availableDepartureDatesForRoute.value, today, maxDepartureStr.value)
+    const available = availableDepartureDatesForRoute.value
+    if (available.size === 0) {
+      return [{ start: today, end: maxDepartureStr.value }]
+    }
+    return buildDisabledRanges(available, today, maxDepartureStr.value)
   })
 
   const disabledReturnDatesRanges = computed(() => {
     if (!canSelectDates.value) return []
     const minStr = departureDate.value || today
-    return buildDisabledRanges(availableReturnDatesForRoute.value, minStr, maxReturnStr.value)
+    const available = availableReturnDatesForRoute.value
+    if (available.size === 0) {
+      return [{ start: minStr, end: maxReturnStr.value }]
+    }
+    return buildDisabledRanges(available, minStr, maxReturnStr.value)
   })
 
   return {

@@ -14,8 +14,6 @@ const returnDate = ref('')
 
 const {
   canSelectDates,
-  availableDepartureDatesForRoute,
-  availableReturnDatesForRoute,
   minDepartureDateObj,
   maxDepartureDateObj,
   returnMinDateObj,
@@ -32,7 +30,7 @@ watch(
     departureDate.value = storeFilters.departureDate ?? ''
     returnDate.value = storeFilters.returnDate ?? ''
   },
-  { deep: true, immediate: true, once: true },
+  { deep: true, immediate: true },
 )
 
 watch([origin, destination, departureDate, returnDate], () => {
@@ -62,21 +60,33 @@ watch(departureDate, (newDep) => {
   }
 })
 
-watch([origin, destination], () => {
-  if (departureDate.value && !availableDepartureDatesForRoute.value.has(departureDate.value)) {
+watch(
+  [origin, destination],
+  () => {
     departureDate.value = ''
-  }
-  if (returnDate.value && !availableReturnDatesForRoute.value.has(returnDate.value)) {
     returnDate.value = ''
-  }
-})
+  },
+  { flush: 'sync' },
+)
 
 function clearFilters() {
-  origin.value = ''
-  destination.value = ''
-  departureDate.value = ''
-  returnDate.value = ''
-  store.resetFilters()
+  const router = typeof useRouter === 'function' ? useRouter() : undefined
+  if (router?.replace) {
+    router.replace({ query: {} }).then(() => {
+      store.resetFilters()
+      origin.value = ''
+      destination.value = ''
+      departureDate.value = ''
+      returnDate.value = ''
+    })
+  }
+  else {
+    store.resetFilters()
+    origin.value = ''
+    destination.value = ''
+    departureDate.value = ''
+    returnDate.value = ''
+  }
 }
 </script>
 
