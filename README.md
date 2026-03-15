@@ -1,33 +1,48 @@
 # Eurowings Flight Offers
 
-Fetches flights from a mocked API and lets users filter and sort results client-side, with additional server-side filtering support on the API route.
+> **Live demo:** https://eurowingsdg-challenge-production.up.railway.app/
 
-## Live Demo
+Flight search UI built on a mocked Eurowings API. Filter by route, dates, seat availability, and price. Results update as you type, sort in four directions, and the full filter state is reflected in the URL.
 
-https://eurowingsdg-challenge-production.up.railway.app/
-
-## Tech Stack
+## Stack
 
 - **Nuxt 4 + Vue 3 + TypeScript** (strict mode)
-- **Pinia** for state management (composition API style)
-- **Vitest + @vue/test-utils** for unit and component tests
-- **Playwright** for end-to-end tests
-- **Plain CSS with custom properties** — no Tailwind, no UI library
-- **Railway** for deployment
+- **Pinia** — composition API store with URL state sync
+- **v-calendar 3** — date picker (lazy-loaded deferred until first use)
+- **Vitest + @vue/test-utils** — unit and component tests
+- **Playwright** — end-to-end tests (desktop Chrome + mobile)
+- **Plain scoped CSS with CSS custom properties** — no Tailwind, no UI library
+- **Railway** — deployment with CI via GitHub Actions
 
-## Architecture decisions
+## Architecture
 
-**Feature-based component structure.** Components live under `app/components/flights/` and `app/components/layout/` rather than a flat directory. Nuxt's auto-import resolves them without path aliases.
+**Shared types.** `shared/types/flight.ts` is the single source of truth for `Flight`, `FlightFilters`, and `FlightSortKey`. Both `app/` and `server/` import from it via the `#shared/*` path alias.
 
-**Shared types via `#shared/*` alias.** The `shared/types/flight.ts` module is accessible from both `app/` and `server/` through a `#shared/*` path alias configured in `tsconfig.json` and `vitest.config.ts`. This means the `Flight` and `FlightFilters` types are the single source of truth for both the API response and the frontend state.
+**Server-side filtering.** `GET /api/flights` accepts `origin`, `destination`, `departureDate`, and `returnDate` query parameters and filters before responding. The client fetches once and filters locally after that, but the server capability is in place for pagination or larger datasets.
 
-**Server-side filtering.** The `GET /api/flights` route accepts `origin`, `destination`, `departureDate`, and `returnDate` query parameters and filters the dataset before responding. The frontend currently fetches everything and filters client-side, but the server-side capability is there for when the dataset grows.
+**Airport search on the server.** `GET /api/airports?q=` runs city-name and IATA lookups using `@nwpr/airport-codes` on the server and returns the top 6 results. Keeping this server-side avoids bundling a 2 MB airport database to the client.
 
-**Pinia store with stable sort.** `filteredAndSortedFlights` is a single computed that chains filtering and sorting. All sort comparators use the flight `uuid` as a tiebreaker to guarantee a stable order across re-renders when prices or dates are equal.
+**Pinia store with URL sync.** `filteredAndSortedFlights` is a single computed that chains filtering and sorting. All sort comparators use `uuid` as a tiebreaker for stable ordering. `useUrlSync()` reads the initial state from query params on mount and keeps the URL in sync as filters change — making all filter states shareable and bookmarkable.
 
-**Mobile-first CSS.** All base styles target mobile. Breakpoints at `640px` and `960px` progressively enhance layout — two-column grid, larger type, wider padding. The filter panel uses a bottom sheet on mobile and renders inline on desktop.
+**`offerType` semantics.** The spec distinguishes two offer types:
+- `ExactMatch` — flights matching the exact departure and return dates selected.
+- `amadeusBestPrice` — best-price alternatives for the same trip duration on different dates (matching the Amadeus API's behaviour). These are shown in a separate "Best price alternatives" section, filtered by duration rather than exact dates.
 
-**Search-first UX.** The results list only appears once both origin and destination are entered (minimum 3 characters each, matching IATA code length). Before that, a prompt is shown instead of an empty list. This avoids showing "0 results" before the user has actually searched.
+**Search-first UX.** Results only appear once both origin and destination have at least 3 characters (IATA code length). Before that, a prompt is shown instead of an empty list.
+
+**Performance.** v-calendar is lazy-loaded via `defineAsyncComponent` and only imported when the date picker popover opens. `FlightCard` is also async-loaded and only rendered when results are present. `store.fetchFlights()` is non-blocking — the shell paints immediately and the list fills in when the API responds.
+
+**Mobile.** All base styles target mobile. Breakpoints at 640 px and 960 px progressively enhance layout. The header extends behind the device status bar via `viewport-fit=cover` and `env(safe-area-inset-top)`.
+
+## Prerequisites
+
+- **Node 20+** (CI uses Node 20)
+
+## Project structure
+
+- `app/` — Nuxt app (pages, components, stores, composables)
+- `server/` — API routes (`/api/flights`, `/api/airports`)
+- `shared/` — Shared TypeScript types (`#shared/*` alias in tsconfig)
 
 ## Getting started
 
@@ -36,7 +51,7 @@ npm install
 npm run dev
 ```
 
-The app runs at http://localhost:3000.
+App runs at http://localhost:3000.
 
 ## Testing
 
@@ -44,13 +59,15 @@ The app runs at http://localhost:3000.
 # Unit and component tests
 npm test
 
-# E2e tests (first time: install browser binaries)
+# E2E tests (first time: install browser binaries; dev server starts automatically)
 npx playwright install chromium
-npx playwright test
+npm run test:e2e
 ```
 
-**Unit and component tests** — 23 tests via Vitest covering utility functions (`formatPrice`, `formatDate`, `getTripDuration`), component rendering states (`FlightCard`, `FlightFilters`, `FlightList`), and store filtering/sorting logic.
+**Unit tests** cover utility functions (`formatPrice`, `formatDate`, `getTripDuration`), the `useFlightDateConstraints` composable, and component rendering states (`FlightCard`, `FlightFilters`, `FlightList`).
 
-**End-to-end tests** — 14 tests via Playwright running against both desktop and mobile viewports. They cover the pre-search state, flight results after filtering, autocomplete suggestions, sort ordering, and the price popover.
+**End-to-end tests** run against desktop Chrome and a mobile Pixel 5 viewport. They cover pre-search state, filtered results, autocomplete, `ExactMatch`/`amadeusBestPrice` offer splitting, sort ordering, and the price popover. Playwright starts the dev server automatically; no need to run `npm run dev` in another terminal.
 
-**Git hooks** — a pre-commit hook runs the unit tests before every commit. A pre-push hook runs the full Playwright suite before every push. Both block on failure.
+**Git hooks** — pre-commit runs unit tests, pre-push runs the full Playwright suite. Both block on failure.
+
+**CI** — GitHub Actions runs `npm test` (unit tests only) on every push and pull request. E2E tests run locally or via the pre-push hook.
