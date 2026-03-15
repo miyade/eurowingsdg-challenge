@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { ref, watch } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
+import { DatePicker } from 'v-calendar'
+import 'v-calendar/style.css'
 import { useFlightsStore } from '~/stores/flights'
 import { useAirportSearch } from '~/composables/flights/useAirportSearch'
 
@@ -12,6 +14,8 @@ const returnDate = ref('')
 
 const showOriginSuggestions = ref(false)
 const showDestinationSuggestions = ref(false)
+const showDeparturePicker = ref(false)
+const showReturnPicker = ref(false)
 
 const originSuggestions = useAirportSearch(origin)
 const destinationSuggestions = useAirportSearch(destination)
@@ -65,6 +69,85 @@ function blurOrigin() {
 function blurDestination() {
   setTimeout(() => { showDestinationSuggestions.value = false }, 150)
 }
+
+const today = new Date().toISOString().split('T')[0]
+
+const availableDepartureDates = computed(() =>
+  store.flights.map((f) => f.departureDate).sort(),
+)
+const minDepartureDateObj = computed(() => new Date(today + 'T12:00:00'))
+const maxDepartureDateObj = computed(() => {
+  const s = availableDepartureDates.value.at(-1)
+  return s ? new Date(s + 'T12:00:00') : null
+})
+
+const availableReturnDates = computed(() =>
+  store.flights.map((f) => f.returnDate).sort(),
+)
+const maxReturnDateObj = computed(() => {
+  const s = availableReturnDates.value.at(-1)
+  return s ? new Date(s + 'T12:00:00') : null
+})
+
+const returnMinDateObj = computed(() => {
+  const s = departureDate.value || today
+  return new Date(s + 'T12:00:00')
+})
+
+const departureDateModel = computed({
+  get: () => departureDate.value ? new Date(departureDate.value + 'T12:00:00') : null,
+  set: (val: Date | null) => {
+    departureDate.value = val ? val.toISOString().split('T')[0] : ''
+  },
+})
+
+const returnDateModel = computed({
+  get: () => returnDate.value ? new Date(returnDate.value + 'T12:00:00') : null,
+  set: (val: Date | null) => {
+    returnDate.value = val ? val.toISOString().split('T')[0] : ''
+  },
+})
+
+function onDeparturePicked() {
+  nextTick(() => { showDeparturePicker.value = false })
+}
+
+function onReturnPicked() {
+  nextTick(() => { showReturnPicker.value = false })
+}
+
+function formatDisplay(str: string): string {
+  if (!str) return ''
+  const d = new Date(str + 'T12:00:00')
+  return new Intl.DateTimeFormat('en-GB', {
+    day: '2-digit',
+    month: 'short',
+    year: 'numeric',
+    timeZone: 'UTC',
+  }).format(d)
+}
+
+function onDocumentClick(e: MouseEvent) {
+  const target = e.target as Node
+  if (target && !(target as Element).closest?.('.filters__datepicker-wrapper')) {
+    showDeparturePicker.value = false
+    showReturnPicker.value = false
+  }
+}
+
+onMounted(() => {
+  document.addEventListener('click', onDocumentClick)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('click', onDocumentClick)
+})
+
+watch(departureDate, (newDep) => {
+  if (returnDate.value && newDep && returnDate.value < newDep) {
+    returnDate.value = ''
+  }
+})
 
 function clearFilters() {
   origin.value = ''
@@ -156,27 +239,67 @@ function clearFilters() {
       </div>
 
       <!-- Departure date -->
-      <div class="filters__field">
+      <div class="filters__field filters__datepicker-wrapper">
         <label for="filter-departure" class="filters__label">Departure</label>
-        <input
+        <button
           id="filter-departure"
-          v-model="departureDate"
-          type="date"
-          class="filters__input"
+          type="button"
+          class="filters__input filters__datepicker-trigger"
+          :class="{ 'filters__datepicker-trigger--active': departureDate }"
           aria-label="Departure date"
-        />
+          aria-haspopup="dialog"
+          :aria-expanded="showDeparturePicker"
+          @click="showDeparturePicker = !showDeparturePicker"
+        >
+          <span>{{ departureDate ? formatDisplay(departureDate) : 'dd.mm.yyyy' }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        </button>
+        <div v-if="showDeparturePicker" class="filters__datepicker-popover">
+          <DatePicker
+            v-model="departureDateModel"
+            :min-date="minDepartureDateObj"
+            :max-date="maxDepartureDateObj"
+            @dayclick="(_, event) => (event?.target as HTMLElement)?.blur()"
+            @update:model-value="onDeparturePicked"
+          />
+        </div>
       </div>
 
       <!-- Return date -->
-      <div class="filters__field">
+      <div class="filters__field filters__datepicker-wrapper">
         <label for="filter-return" class="filters__label">Return</label>
-        <input
+        <button
           id="filter-return"
-          v-model="returnDate"
-          type="date"
-          class="filters__input"
+          type="button"
+          class="filters__input filters__datepicker-trigger"
+          :class="{ 'filters__datepicker-trigger--active': returnDate }"
           aria-label="Return date"
-        />
+          aria-haspopup="dialog"
+          :aria-expanded="showReturnPicker"
+          @click="showReturnPicker = !showReturnPicker"
+        >
+          <span>{{ returnDate ? formatDisplay(returnDate) : 'dd.mm.yyyy' }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+            <line x1="16" y1="2" x2="16" y2="6" />
+            <line x1="8" y1="2" x2="8" y2="6" />
+            <line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+        </button>
+        <div v-if="showReturnPicker" class="filters__datepicker-popover">
+          <DatePicker
+            v-model="returnDateModel"
+            :min-date="returnMinDateObj"
+            :max-date="maxReturnDateObj"
+            @dayclick="(_, event) => (event?.target as HTMLElement)?.blur()"
+            @update:model-value="onReturnPicked"
+          />
+        </div>
       </div>
 
     </div>
@@ -270,6 +393,33 @@ function clearFilters() {
   outline: none;
   border-color: var(--color-primary);
   box-shadow: 0 0 0 3px rgba(228, 0, 58, 0.12);
+}
+
+.filters__datepicker-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  text-align: left;
+  cursor: pointer;
+  color: var(--color-neutral-500);
+}
+
+.filters__datepicker-trigger--active {
+  color: var(--color-neutral-900);
+}
+
+.filters__datepicker-popover {
+  --vc-accent-600: #E4003A;
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 4px;
+  z-index: 100;
+  background: var(--color-white);
+  border: 1.5px solid var(--color-neutral-200);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-card);
 }
 
 .filters__autocomplete {
