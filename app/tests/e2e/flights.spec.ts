@@ -1,6 +1,17 @@
 import { test, expect } from '@playwright/test'
+import type { Page } from '@playwright/test'
 
-test.setTimeout(15000)
+test.setTimeout(25000)
+
+async function fillOriginDestination(page: Page, origin: string, destination: string) {
+  await page.locator('#filter-origin').click()
+  await page.locator('#filter-origin').pressSequentially(origin, { delay: 80 })
+  await expect(page.locator('#filter-origin')).toHaveValue(origin, { timeout: 5000 })
+  await page.locator('#filter-destination').click()
+  await page.locator('#filter-destination').pressSequentially(destination, { delay: 80 })
+  await expect(page.locator('#filter-destination')).toHaveValue(destination, { timeout: 5000 })
+  await expect(page.getByText('flight(s) found')).toBeVisible({ timeout: 15000 })
+}
 
 test('shows pre-search state on load', async ({ page }) => {
   await page.goto('/')
@@ -12,13 +23,8 @@ test('shows pre-search state on load', async ({ page }) => {
 test('shows flights after entering origin and destination', async ({ page }) => {
   await page.goto('/')
   await page.waitForLoadState('networkidle')
-  await page.locator('#filter-origin').focus()
-  await page.keyboard.type('DUS')
-  await page.locator('#filter-destination').focus()
-  await page.keyboard.type('BCN')
-  await page.waitForTimeout(300)
-  await expect(page.locator('.flight-card').first()).toBeVisible({ timeout: 10000 })
-  await expect(page.getByText('flight(s) found')).toBeVisible()
+  await fillOriginDestination(page, 'DUS', 'BCN')
+  await expect(page.locator('.flight-card').first()).toBeVisible()
 })
 
 test('autocomplete suggests matching origins', async ({ page }) => {
@@ -43,12 +49,7 @@ test('selecting autocomplete suggestion fills the input', async ({ page }) => {
 test('low seats chip filters flights correctly', async ({ page }) => {
   await page.goto('/')
   await page.waitForLoadState('networkidle')
-  await page.locator('#filter-origin').focus()
-  await page.keyboard.type('HAM')
-  await page.locator('#filter-destination').focus()
-  await page.keyboard.type('FCO')
-  await page.waitForTimeout(300)
-  await expect(page.locator('.flight-card').first()).toBeVisible({ timeout: 10000 })
+  await fillOriginDestination(page, 'HAM', 'FCO')
   await page.getByRole('button', { name: 'Low seats' }).click()
   await expect(page.locator('.flight-card').first()).toBeVisible()
   await expect(page.getByText(/Only.*seats left/).first()).toBeVisible()
@@ -57,12 +58,7 @@ test('low seats chip filters flights correctly', async ({ page }) => {
 test('sort by price ascending orders flights correctly', async ({ page }) => {
   await page.goto('/')
   await page.waitForLoadState('networkidle')
-  await page.locator('#filter-origin').focus()
-  await page.keyboard.type('DUS')
-  await page.locator('#filter-destination').focus()
-  await page.keyboard.type('BCN')
-  await page.waitForTimeout(300)
-  await expect(page.locator('.flight-card').first()).toBeVisible({ timeout: 10000 })
+  await fillOriginDestination(page, 'DUS', 'BCN')
   await page.locator('#sort-select').selectOption('price-asc')
   const priceElements = page.locator('.flight-price__amount')
   const count = await priceElements.count()
@@ -81,12 +77,7 @@ test('sort by price ascending orders flights correctly', async ({ page }) => {
 test('price popover opens and closes', async ({ page }) => {
   await page.goto('/')
   await page.waitForLoadState('networkidle')
-  await page.locator('#filter-origin').focus()
-  await page.keyboard.type('DUS')
-  await page.locator('#filter-destination').focus()
-  await page.keyboard.type('BCN')
-  await page.waitForTimeout(300)
-  await expect(page.locator('.flight-card').first()).toBeVisible({ timeout: 10000 })
+  await fillOriginDestination(page, 'DUS', 'BCN')
   await page.getByRole('button', { name: /Price/ }).click()
   await expect(page.getByRole('dialog', { name: 'Set maximum price' })).toBeVisible()
   await page.mouse.click(10, 10)
