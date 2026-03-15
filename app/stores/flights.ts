@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import type { Flight, FlightFilters, FlightSortKey } from '#shared/types/flight'
 
 export const useFlightsStore = defineStore('flights', () => {
@@ -146,6 +146,123 @@ export const useFlightsStore = defineStore('flights', () => {
     sortKey.value = key
   }
 
+  const maxPriceBound = computed(() => {
+    if (!flights.value.length) return 400
+    return Math.ceil(Math.max(...flights.value.map((f) => f.price.amount)))
+  })
+
+  function isValidOfferType(value: string): value is 'ExactMatch' | 'amadeusBestPrice' {
+    return value === 'ExactMatch' || value === 'amadeusBestPrice'
+  }
+
+  function isValidSortKey(value: string): value is FlightSortKey {
+    return ['price-asc', 'price-desc', 'date-asc', 'date-desc'].includes(value)
+  }
+
+  function pickFirstQueryValue(value: string | string[] | undefined): string | undefined {
+    const raw = Array.isArray(value) ? value[0] : value
+    return raw?.trim() || undefined
+  }
+
+  function parseQueryParams(query: Record<string, string | string[] | undefined>) {
+    const origin = pickFirstQueryValue(query.origin)
+    const destination = pickFirstQueryValue(query.destination)
+    const departureDate = pickFirstQueryValue(query.departure)
+    const returnDate = pickFirstQueryValue(query.return)
+
+    const rawOfferType = pickFirstQueryValue(query.offerType)
+    const offerType = rawOfferType && isValidOfferType(rawOfferType) ? rawOfferType : undefined
+
+    const lowSeatsOnly = query.lowSeats === '1' ? (true as const) : undefined
+
+    const rawMaxPrice = pickFirstQueryValue(query.maxPrice)
+    const parsedMaxPrice = rawMaxPrice !== undefined ? Number(rawMaxPrice) : NaN
+    const maxPrice = rawMaxPrice !== undefined && !isNaN(parsedMaxPrice) ? parsedMaxPrice : undefined
+
+    const rawSort = pickFirstQueryValue(query.sort)
+    const parsedSortKey: FlightSortKey = rawSort && isValidSortKey(rawSort) ? rawSort : 'none'
+
+    return { origin, destination, departureDate, returnDate, offerType, lowSeatsOnly, maxPrice, parsedSortKey }
+  }
+
+  function initFromQuery(query: Record<string, string | string[] | undefined>): void {
+    const { origin, destination, departureDate, returnDate, offerType, lowSeatsOnly, maxPrice, parsedSortKey } =
+      parseQueryParams(query)
+    filters.value = { origin, destination, departureDate, returnDate, offerType, lowSeatsOnly, maxPrice }
+    sortKey.value = parsedSortKey
+  }
+
+  function buildQuery(): Record<string, string> {
+    const activeParams: Record<string, string> = {}
+    const f = filters.value
+
+    if (f.origin) activeParams.origin = f.origin
+    if (f.destination) activeParams.destination = f.destination
+    if (f.departureDate) activeParams.departure = f.departureDate
+    if (f.returnDate) activeParams.return = f.returnDate
+    if (f.offerType) activeParams.offerType = f.offerType
+    if (f.lowSeatsOnly === true) activeParams.lowSeats = '1'
+    if (f.maxPrice !== undefined && f.maxPrice < maxPriceBound.value) {
+      activeParams.maxPrice = String(f.maxPrice)
+    }
+    if (sortKey.value !== 'none') activeParams.sort = sortKey.value
+
+    return activeParams
+  }
+
+  function useUrlSync(): void {
+    if (!import.meta.client) return
+
+    const route = useRoute()
+    const router = useRouter()
+
+    initFromQuery(route.query as Record<string, string | string[]>)
+
+    watch(
+      [filters, sortKey],
+      () => {
+        const nextQuery = buildQuery()
+        const currentQuery = route.query as Record<string, string>
+        const nextKeys = Object.keys(nextQuery).sort()
+        const currentKeys = Object.keys(currentQuery).sort()
+        const alreadyInSync =
+          nextKeys.length === currentKeys.length &&
+          nextKeys.every((k) => nextQuery[k] === currentQuery[k])
+
+        if (!alreadyInSync) {
+          router.replace({ query: nextQuery })
+        }
+      },
+      { deep: true },
+    )
+
+    watch(
+      () => route.query,
+      (newQuery) => {
+        const { origin, destination, departureDate, returnDate, offerType, lowSeatsOnly, maxPrice, parsedSortKey } =
+          parseQueryParams(newQuery as Record<string, string | string[]>)
+
+        const f = filters.value
+        const filtersUnchanged =
+          origin === f.origin &&
+          destination === f.destination &&
+          departureDate === f.departureDate &&
+          returnDate === f.returnDate &&
+          offerType === f.offerType &&
+          lowSeatsOnly === f.lowSeatsOnly &&
+          maxPrice === f.maxPrice
+
+        if (!filtersUnchanged) {
+          filters.value = { origin, destination, departureDate, returnDate, offerType, lowSeatsOnly, maxPrice }
+        }
+
+        if (parsedSortKey !== sortKey.value) {
+          sortKey.value = parsedSortKey
+        }
+      },
+    )
+  }
+
   return {
     flights,
     isLoading,
@@ -156,9 +273,13 @@ export const useFlightsStore = defineStore('flights', () => {
     hasMinimumFilters,
     availableOrigins,
     availableDestinations,
+    maxPriceBound,
     fetchFlights,
     setFilters,
     resetFilters,
     setSortKey,
+    initFromQuery,
+    buildQuery,
+    useUrlSync,
   }
 })

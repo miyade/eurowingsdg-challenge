@@ -16,12 +16,35 @@ const showDestinationSuggestions = ref(false)
 const originSuggestions = useAirportSearch(origin)
 const destinationSuggestions = useAirportSearch(destination)
 
+watch(
+  () => store.filters,
+  (storeFilters) => {
+    origin.value = storeFilters.origin ?? ''
+    destination.value = storeFilters.destination ?? ''
+    departureDate.value = storeFilters.departureDate ?? ''
+    returnDate.value = storeFilters.returnDate ?? ''
+  },
+  { deep: true, immediate: true, once: true },
+)
+
 watch([origin, destination, departureDate, returnDate], () => {
+  const nextOrigin = origin.value || undefined
+  const nextDestination = destination.value || undefined
+  const nextDepartureDate = departureDate.value || undefined
+  const nextReturnDate = returnDate.value || undefined
+
+  if (
+    nextOrigin === store.filters.origin &&
+    nextDestination === store.filters.destination &&
+    nextDepartureDate === store.filters.departureDate &&
+    nextReturnDate === store.filters.returnDate
+  ) return
+
   store.setFilters({
-    origin: origin.value || undefined,
-    destination: destination.value || undefined,
-    departureDate: departureDate.value || undefined,
-    returnDate: returnDate.value || undefined,
+    origin: nextOrigin,
+    destination: nextDestination,
+    departureDate: nextDepartureDate,
+    returnDate: nextReturnDate,
   })
 })
 
@@ -48,6 +71,7 @@ function clearFilters() {
   destination.value = ''
   departureDate.value = ''
   returnDate.value = ''
+  store.resetFilters()
 }
 </script>
 

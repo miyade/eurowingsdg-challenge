@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, watch, nextTick, onUnmounted } from 'vue'
+import { ref, computed, watch, nextTick, onMounted, onUnmounted } from 'vue'
 import { useFlightsStore } from '~/stores/flights'
 import type { FlightSortKey } from '#shared/types/flight'
 
@@ -17,6 +17,17 @@ const maxBound = computed(() => {
 
 const pricePopoverOpen = ref(false)
 const sliderValue = ref(maxBound.value)
+
+onMounted(() => {
+  sliderValue.value = store.filters.maxPrice ?? maxBound.value
+})
+
+watch(
+  () => store.filters.maxPrice,
+  (maxPrice) => {
+    sliderValue.value = maxPrice ?? maxBound.value
+  },
+)
 
 function openPricePopover() {
   sliderValue.value = store.filters.maxPrice ?? maxBound.value
