@@ -8,6 +8,7 @@ export default defineNuxtConfig({
       title: 'Eurowings Flight Offers',
       htmlAttrs: { lang: 'en' },
       meta: [
+        { name: 'viewport', content: 'width=device-width, initial-scale=1, viewport-fit=cover' },
         {
           name: 'description',
           content: 'Browse and filter Eurowings flight price offers by origin, destination, and travel dates.',

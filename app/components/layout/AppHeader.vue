@@ -21,6 +21,7 @@
 .header {
   background: linear-gradient(135deg, #E4003A 0%, #B8002E 100%);
   padding: var(--space-sm) var(--space-md);
+  padding-top: env(safe-area-inset-top);
   display: flex;
   align-items: center;
   justify-content: space-between;
