@@ -28,8 +28,7 @@ store.useUrlSync()
 }
 
 .page__hero {
-  padding-top: env(safe-area-inset-top);
-  height: calc(80px + env(safe-area-inset-top));
+  height: 80px;
   background: linear-gradient(135deg, #E4003A 0%, #B8002E 100%);
   margin-top: -1px;
 }

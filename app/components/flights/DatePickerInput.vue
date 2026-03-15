@@ -37,6 +37,11 @@ const dateModel = computed({
   },
 })
 
+const triggerAriaLabel = computed(() => {
+  const visibleText = props.modelValue ? formatDisplay(props.modelValue) : 'dd.mm.yyyy'
+  return `${props.label}, ${visibleText}`
+})
+
 function formatDisplay(str: string): string {
   if (!str) return ''
   const d = new Date(str + 'T12:00:00')
@@ -78,7 +83,7 @@ onUnmounted(() => {
         'filters__datepicker-trigger--active': modelValue,
         'filters__datepicker-trigger--disabled': disabled,
       }"
-      :aria-label="label"
+      :aria-label="triggerAriaLabel"
       aria-haspopup="dialog"
       :aria-expanded="showPicker"
       :disabled="disabled"

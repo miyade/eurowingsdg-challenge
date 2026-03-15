@@ -150,7 +150,7 @@ const store = useFlightsStore()
 
 .flight-list__presearch-message {
   font-size: var(--text-sm);
-  color: var(--color-neutral-500);
+  color: var(--color-neutral-600);
   margin: 0;
 }
 
@@ -173,7 +173,7 @@ const store = useFlightsStore()
 
 .flight-list__empty-message {
   font-size: var(--text-sm);
-  color: var(--color-neutral-500);
+  color: var(--color-neutral-600);
   margin: 0;
 }
 
