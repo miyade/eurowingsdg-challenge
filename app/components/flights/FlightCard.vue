@@ -99,11 +99,6 @@ const props = defineProps<{
   color: var(--color-neutral-500);
 }
 
-.flight-meta span + span::before {
-  content: "·";
-  margin-right: var(--space-sm);
-}
-
 .flight-price {
   display: flex;
   align-items: baseline;
