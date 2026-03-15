@@ -1,7 +1,7 @@
 import { ref, watchEffect } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useFlightsStore } from '~/stores/flights'
-import type { FlightFilters, FlightSortKey } from '#shared/types/flight'
+import type { FlightFilters } from '#shared/types/flight'
 
 export function useFlightFilters() {
   const store = useFlightsStore()
@@ -19,6 +19,9 @@ export function useFlightFilters() {
     destination: undefined,
     departureDate: undefined,
     returnDate: undefined,
+    offerType: undefined,
+    lowSeatsOnly: undefined,
+    maxPrice: undefined,
   })
 
   const isFilterPanelOpen = ref<boolean>(false)
@@ -48,6 +51,9 @@ export function useFlightFilters() {
       destination: undefined,
       departureDate: undefined,
       returnDate: undefined,
+      offerType: undefined,
+      lowSeatsOnly: undefined,
+      maxPrice: undefined,
     }
   }
 
