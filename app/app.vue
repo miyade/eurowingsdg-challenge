@@ -8,9 +8,10 @@ store.useUrlSync()
 
 <template>
   <div class="page">
+    <a href="#main-content" class="skip-link">Skip to search form</a>
     <AppHeader />
     <div class="page__hero" aria-hidden="true" />
-    <main class="page__content">
+    <main id="main-content" class="page__content" tabindex="-1">
       <ClientOnly>
       <FlightFilters />
       <FlightControls v-if="store.hasAllFilters" />
@@ -21,10 +22,33 @@ store.useUrlSync()
 </template>
 
 <style>
+.skip-link {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  padding: var(--space-md) var(--space-lg);
+  background: var(--color-white);
+  color: var(--color-primary);
+  font-weight: var(--font-semibold);
+  font-size: var(--text-sm);
+  text-decoration: none;
+  border-radius: 0 0 var(--radius-md) 0;
+  box-shadow: var(--shadow-card);
+  transform: translateY(-100%);
+  transition: transform 0.15s ease;
+}
+.skip-link:focus {
+  transform: translateY(0);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
 .page {
   min-height: 100vh;
   background: var(--color-neutral-100);
   overflow-x: hidden;
+  position: relative;
 }
 
 .page__hero {

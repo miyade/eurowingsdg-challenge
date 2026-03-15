@@ -70,7 +70,7 @@ const FlightCard = defineAsyncComponent(() =>
 
       <div v-if="store.bestPriceFlights.length > 0" class="flight-list__section">
         <h2 class="flight-list__section-title">
-          Best price alternatives
+          Best alternatives
           <span class="flight-list__section-subtitle">Flexible dates</span>
         </h2>
         <ul class="flight-list__grid" role="list">

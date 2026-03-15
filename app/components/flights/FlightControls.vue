@@ -15,8 +15,36 @@ const maxBound = computed(() => {
   return Math.ceil(Math.max(...store.flights.map((f) => f.price.amount)))
 })
 
+const sortSelectRef = ref<HTMLSelectElement | null>(null)
+const sortOpenedByEnter = ref(false)
 const pricePopoverOpen = ref(false)
 const sliderValue = ref(maxBound.value)
+
+function onSortSelectKeydown(e: KeyboardEvent) {
+  if (e.key !== 'Enter') return
+  const el = sortSelectRef.value
+  if (e.target !== el) return
+  if (sortOpenedByEnter.value) {
+    sortOpenedByEnter.value = false
+    return
+  }
+  e.preventDefault()
+  if (!el) return
+  if (typeof (el as HTMLSelectElement).showPicker === 'function') {
+    try {
+      ;(el as HTMLSelectElement).showPicker()
+    } catch {
+      el.click()
+    }
+  } else {
+    el.click()
+  }
+  sortOpenedByEnter.value = true
+}
+
+function onSortSelectBlur() {
+  sortOpenedByEnter.value = false
+}
 
 onMounted(() => {
   sliderValue.value = store.filters.maxPrice ?? maxBound.value
@@ -78,7 +106,15 @@ const filterChips = computed(() => [
   <div class="controls">
     <div class="controls__sort">
       <label for="sort-select" class="sr-only">Sort flights</label>
-      <select id="sort-select" v-model="sortModel" class="controls__select">
+      <select
+        ref="sortSelectRef"
+        id="sort-select"
+        v-model="sortModel"
+        class="controls__select"
+        aria-label="Sort flights"
+        @keydown="onSortSelectKeydown"
+        @blur="onSortSelectBlur"
+      >
         <option v-for="opt in sortOptions" :key="opt.value" :value="opt.value">
           {{ opt.label }}
         </option>

@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, onMounted, onUnmounted, watch } from 'vue'
 
+type DisabledRange = { start: string; end: string }
+
 const props = withDefaults(
   defineProps<{
     modelValue: string
@@ -9,7 +11,7 @@ const props = withDefaults(
     disabled?: boolean
     minDate?: Date | null
     maxDate?: Date | null
-    disabledDates?: ((date: Date) => boolean) | object[]
+    disabledDates?: ((date: Date) => boolean) | DisabledRange[]
   }>(),
   { disabled: false, minDate: null, maxDate: null, disabledDates: () => [] },
 )
@@ -20,6 +22,8 @@ const emit = defineEmits<{
 
 const showPicker = ref(false)
 const wrapperRef = ref<HTMLElement | null>(null)
+const popoverRef = ref<HTMLElement | null>(null)
+const datePickerRef = ref<InstanceType<typeof import('v-calendar').DatePicker> | null>(null)
 const DatePickerComponent = ref<typeof import('v-calendar').DatePicker | null>(null)
 const calendarLoading = ref(false)
 
@@ -43,6 +47,131 @@ function dateToLocalYYYYMMDD(d: Date): string {
   const m = String(d.getMonth() + 1).padStart(2, '0')
   const day = String(d.getDate()).padStart(2, '0')
   return `${y}-${m}-${day}`
+}
+
+function isDateDisabled(date: Date): boolean {
+  const d = dateToLocalYYYYMMDD(date)
+  if (props.minDate && date < props.minDate) return true
+  if (props.maxDate && date > props.maxDate) return true
+  const ranges = props.disabledDates
+  if (typeof ranges === 'function') return ranges(date)
+  if (!Array.isArray(ranges) || ranges.length === 0) return false
+  return (ranges as DisabledRange[]).some(
+    (r) => r.start <= d && d <= r.end,
+  )
+}
+
+function addDays(date: Date, n: number): Date {
+  const out = new Date(date)
+  out.setDate(out.getDate() + n)
+  return out
+}
+
+function getFirstEnabledDateInMonth(anchor: Date): Date | null {
+  const year = anchor.getFullYear()
+  const month = anchor.getMonth()
+  const first = new Date(year, month, 1)
+  const last = new Date(year, month + 1, 0)
+  for (let d = new Date(first); d <= last; d.setDate(d.getDate() + 1)) {
+    const copy = new Date(d)
+    if (!isDateDisabled(copy)) return copy
+  }
+  return null
+}
+
+function getNextEnabledDate(from: Date): Date | null {
+  let d = addDays(from, 1)
+  const limit = props.maxDate ?? new Date(from.getFullYear() + 1, 11, 31)
+  while (d <= limit) {
+    if (!isDateDisabled(d)) return d
+    d = addDays(d, 1)
+  }
+  return null
+}
+
+function getPrevEnabledDate(from: Date): Date | null {
+  let d = addDays(from, -1)
+  const limit = props.minDate ?? new Date(from.getFullYear() - 1, 0, 1)
+  while (d >= limit) {
+    if (!isDateDisabled(d)) return d
+    d = addDays(d, -1)
+  }
+  return null
+}
+
+function focusDayEl(date: Date) {
+  nextTick(() => {
+    const str = dateToLocalYYYYMMDD(date)
+    const el = popoverRef.value?.querySelector(
+      `.id-${str} .vc-day-content`,
+    ) as HTMLElement | null
+    el?.focus()
+  })
+}
+
+function getDateFromFocusedDay(): Date | null {
+  const el = document.activeElement as HTMLElement | null
+  if (!el?.classList?.contains('vc-day-content')) return null
+  const dayRow = el.closest('.vc-day')
+  if (!dayRow) return null
+  const idClass = [...dayRow.classList].find((c) => /^id-\d{4}-\d{2}-\d{2}$/.test(c))
+  if (!idClass) return null
+  const dateStr = idClass.slice(3)
+  return new Date(dateStr + 'T12:00:00')
+}
+
+function focusFirstEnabledDay() {
+  const anchor = dateModel.value || new Date()
+  const toFocus =
+    dateModel.value && !isDateDisabled(dateModel.value)
+      ? dateModel.value
+      : getFirstEnabledDateInMonth(anchor)
+  if (!toFocus) return
+  const picker = datePickerRef.value as { move?: (t: Date) => Promise<boolean> } | null
+  picker?.move?.(toFocus).then(() => focusDayEl(toFocus))
+}
+
+watch(
+  () => [showPicker.value, calendarLoading.value],
+  ([show, loading]) => {
+    if (show && !loading) {
+      nextTick(() => {
+        nextTick(focusFirstEnabledDay)
+      })
+    }
+  },
+)
+
+function onPopoverKeydown(e: KeyboardEvent) {
+  if (!popoverRef.value?.contains(document.activeElement as Node)) return
+  const target = document.activeElement as HTMLElement
+  if (!target?.classList?.contains('vc-day-content')) return
+
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown'].includes(e.key)) {
+    e.preventDefault()
+    const current = getDateFromFocusedDay()
+    if (!current) return
+    let next: Date | null = null
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+      next = getNextEnabledDate(current)
+    } else {
+      next = getPrevEnabledDate(current)
+    }
+    if (!next) return
+    const picker = datePickerRef.value as { move?: (t: Date) => Promise<boolean> } | null
+    picker?.move?.(next).then(() => focusDayEl(next!))
+    return
+  }
+
+  if (e.key === 'Enter') {
+    if (target.classList.contains('vc-disabled')) return
+    const date = getDateFromFocusedDay()
+    if (date) {
+      e.preventDefault()
+      dateModel.value = date
+      onPicked()
+    }
+  }
 }
 
 const dateModel = computed({
@@ -112,12 +241,18 @@ onUnmounted(() => {
         <line x1="3" y1="10" x2="21" y2="10" />
       </svg>
     </button>
-    <div v-if="showPicker" class="filters__datepicker-popover">
+    <div
+      ref="popoverRef"
+      v-if="showPicker"
+      class="filters__datepicker-popover"
+      @keydown.capture="onPopoverKeydown"
+    >
       <div v-if="calendarLoading" class="filters__datepicker-loading" aria-hidden="true">
         <span class="filters__datepicker-loading-text">Loading…</span>
       </div>
       <template v-else-if="DatePickerComponent">
         <component
+          ref="datePickerRef"
           :is="DatePickerComponent"
           v-model="dateModel"
           :min-date="minDate"
@@ -172,6 +307,11 @@ onUnmounted(() => {
   background: var(--color-neutral-100);
   cursor: not-allowed;
   opacity: 0.7;
+}
+
+.filters__datepicker-trigger:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
 }
 
 .filters__datepicker-popover {
